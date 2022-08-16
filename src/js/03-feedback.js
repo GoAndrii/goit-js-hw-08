@@ -1,49 +1,37 @@
-//Imports
 import throttle from 'lodash.throttle';
-//Refs
-const { form, email, message } = {
-  form: document.querySelector('.feedback-form'),
-  email: document.querySelector('input'),
-  message: document.querySelector('textarea'),
-};
 
-const storageObject = {};
-//Function to store input data in local storage
-const onInputStoreData = function (e) {
-  storageObject[e.target.name] = e.target.value;
-  localStorage.setItem('feedback-form-state', JSON.stringify(storageObject));
-};
+const feedbackForm = document.querySelector('.feedback-form');
 
-//Event Listener with throttle for form inputs
-form.addEventListener('input', throttle(onInputStoreData, 500));
+feedbackForm.addEventListener('input', throttle(localData, 500));
 
-//Check for local storage and adding data to inputs on reload
-const getStorageObject = localStorage.getItem('feedback-form-state');
-const parsed = JSON.parse(getStorageObject);
+const email = document.querySelector('[name="email"]');
+const message = document.querySelector('[name="message"]');
 
-if (getStorageObject !== null) {
-  if (parsed.email) {
-    email.value = parsed.email;
-  }
-  if (parsed.message) {
-    message.value = parsed.message;
-  }
-}
-
-//Function on submit to reset form, remove local storage data and log in console current data
-form.addEventListener('submit', e => {
-  e.preventDefault();
-  const submitParsed = JSON.parse(localStorage.getItem('feedback-form-state'));
-  console.log('This is current data from Local Storage', submitParsed);
-
-  localStorage.removeItem('feedback-form-state');
-
-  const currentData = {
+function localData() {
+  const formData = {
     email: email.value,
     message: message.value,
   };
+  localStorage.setItem('feedback-form-state', JSON.stringify(formData));
+}
 
-  console.log('This is current data from form', currentData);
+function getLocalData() {
+  let localData = JSON.parse(localStorage.getItem('feedback-form-state'));
+  if (localData !== null) {
+    email.value = localData.email;
+    message.value = localData.message;
+  }
+}
+getLocalData();
 
-  form.reset();
-});
+feedbackForm.addEventListener('submit', submitData);
+
+function submitData(e) {
+  e.preventDefault();
+  if (email.value && message.value) {
+    this.reset();
+    console.log(localStorage.getItem('feedback-form-state'));
+    localStorage.removeItem('feedback-form-state');
+  }
+  else alert (`Введите данные`)
+}
